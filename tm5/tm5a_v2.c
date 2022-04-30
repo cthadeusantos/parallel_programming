@@ -1,4 +1,4 @@
-/* tm5a.1.c - array searching example where each process is looking for a specific
+/* tm5a_v2.c - array searching example where each process is looking for a specific
    size_array and notifies the other processes when it finds it. Uses a non-blocking receive.
 */
 #include <mpi.h>
