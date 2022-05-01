@@ -11,9 +11,10 @@ int main(int argc, char* argv[]) {
     // MPI_Request request;
     int nvalues;
     
-    int *array, *temp;
+    int *array=NULL, *temp=NULL;
     array = malloc(sizeof(int));
     temp = malloc(sizeof(int));
+        // temp1 = malloc(sizeof(int));
 
     int i,j, buscado, size_array;
     FILE *infile;
@@ -21,44 +22,75 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-
+        // MPI_Barrier(MPI_COMM_WORLD);
+    
 
     // Gera os dados
     if (rank == 0) {    // MASTER
-        // Solicita numero a ser buscado
-        // printf("Qual o valor que você está buscando? ");
-        // fflush(stdout); // MPI: Força a execução da declaração printf
-        // scanf("%d", &buscado);
 
         // Lê arquivo
         infile=fopen("data.txt","rt");
         
         fscanf(infile,"%d",&buscado);       // Número procurado
         fscanf(infile,"%d",&size_array);    // Máximo de elementos do array
-        array = realloc(array, size_array * sizeof(int));
+        array = realloc(array, (int)((size_array) * sizeof(int)));
         printf("Lendo!\n");
         fflush(stdout);
         // Constroi array
         for(i = 0; i < size_array; ++i) {
             fscanf(infile,"%d",&array[i]);
         }
-        printf("leitura finalizada\n");
+        printf("leitura finalizada %d\n", size);
         fflush(stdout);
-    } 
-
-    // Envia os dados para os processos
-    nvalues = size_array / size ;   // elementos por processo
-    // printf("\n\n%d %d\n", rank, array[0]);
-    temp = realloc(temp, nvalues * sizeof(int));
-
-    MPI_Scatter(array, nvalues, MPI_INT, temp, nvalues, MPI_INT, 0, MPI_COMM_WORLD);
-
-    if (rank == 0) {
-        printf("4. Processor %d has data: ", rank);
-        for (i=0; i<size; i++)
-            printf("%d ", array[i]);
-        printf("\n");
     }
+
+
+        
+
+        // temp1 = realloc(temp, nvalues * sizeof(int));
+                // MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Bcast(&buscado, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        nvalues = (int) size_array / size ;   // elementos por processo
+        MPI_Bcast(&nvalues, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        temp = realloc(temp, nvalues * sizeof(int));
+        MPI_Scatter(array, nvalues, MPI_INT, temp, nvalues, MPI_INT, 0, MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
+
+        // MPI_Gather(&temp,nvalues,MPI_INT,temp1,nvalues,MPI_INT,0,MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
+        // MPI_Barrier(MPI_COMM_WORLD);
+        for (i = 0; i < nvalues; i++){
+            if (temp[i] == buscado){
+                printf("Valor encontrado %d no rank %d\n", temp[i], rank);
+            }
+        }
+
+
+    // if (rank < size - 1){
+    //     // MPI_Gather(temp, nvalues, MPI_INT, temp, nvalues, MPI_INT, 0, MPI_COMM_WORLD);
+    // } else {
+    //     MPI_Scatter(array, nvalues - 1, MPI_INT, temp, nvalues - 1, MPI_INT, 0, MPI_COMM_WORLD);
+    //     // MPI_Gather(temp, nvalues-1, MPI_INT, temp, nvalues-1, MPI_INT, 0, MPI_COMM_WORLD);       
+    // }
+            // MPI_Barrier(MPI_COMM_WORLD);
+    
+    // if(rank == 0) { //If root: process the received data.
+        // if (rank == size - 1){
+        //     for (i=0; i < nvalues - 1; i++){
+        //         printf("rank %d valor %d \n", rank, temp[i]);
+        //     }
+        // } else {
+        //     for (i=0; i < nvalues; i++){
+        //         printf("rank %d valor %d \n", rank, temp[i]);
+        //     }
+        // }
+    // }
+    // Envia os dados para os processos
+    // printf("\n\n%d %d\n", rank, array[0]);
+    // temp = realloc(temp, nvalues * sizeof(int));
+    
+
     // printf("1. Processor %d has data %d\n", rank, *temp);
 
         // MPI_Barrier(MPI_COMM_WORLD);
@@ -67,8 +99,9 @@ int main(int argc, char* argv[]) {
         // printf("2. Processor %d has data %d\n", rank, *temp);
         // MPI_Gather(temp, 1, MPI_INT, array, size_array, MPI_INT, 0, MPI_COMM_WORLD);
     
-        free(temp);
         free(array);
+        free(temp);
+
         MPI_Finalize();
         return 0;
     //     // Verifica se mais de um processo está rodando
