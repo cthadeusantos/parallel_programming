@@ -12,9 +12,10 @@ aleatório
 int main(int argc, char* argv[]) {
     int rank,size, n_elements_recieved, source;
     MPI_Status status;
-    MPI_Request request;
-    int done,myfound,inrange,nvalues;
-    
+    // MPI_Request request;
+    int nvalues;
+    float time1, time2, delta_time;
+
     int *array, *temp;
     array = malloc(sizeof(int));
     temp = malloc(sizeof(int));
@@ -25,10 +26,8 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-    myfound=0;
 
-
-    if (rank == 0) {    // MASTER
+    if (rank ==0){
         // Solicita numero a ser buscado
         printf("Qual o valor que você está buscando? ");
         fflush(stdout); // MPI: Força a execução da declaração printf
@@ -43,10 +42,12 @@ int main(int argc, char* argv[]) {
         for (i = 0; i < size_array; i++){
             array[i] = rand() % size_array;
         }
+    }
 
+    time1 = MPI_Wtime();
+    if (rank == 0) {    // MASTER
         nvalues = size_array / size ;   // elementos por processo 
         int index;
-        
         // Verifica se mais de um processo está rodando
         if (size > 1) {
             for (i = 1; i < size - 1 ; i++){
@@ -56,6 +57,7 @@ int main(int argc, char* argv[]) {
                 MPI_Send(&array[index], nvalues, MPI_INT, i, 123, MPI_COMM_WORLD);
             }
             
+            printf("INDICE %d \n", i);
             // Adiciona elementos ao ultimo processo
             index = i * nvalues;
             int elements_left = size_array - index;
@@ -71,10 +73,9 @@ int main(int argc, char* argv[]) {
                 dummy = i + rank * nvalues;
                 n_elements_recieved = 0;
             }
-            // printf("master %d counter %d process: values are %d\n", rank, counter++, array[i]);
         }
         MPI_Send(&dummy, 1, MPI_INT, 0, 123, MPI_COMM_WORLD);
-        MPI_Recv(&dummy, 1, MPI_INT, source, 123, MPI_COMM_WORLD, &status);
+        MPI_Recv(&dummy, 1, MPI_INT, 0, 123, MPI_COMM_WORLD, &status);
     } else {    // SLAVE
         MPI_Recv(&n_elements_recieved, 1, MPI_INT, 0, 123, MPI_COMM_WORLD, &status);
         MPI_Recv(&buscado, 1, MPI_INT, 0, 123, MPI_COMM_WORLD, &status);
@@ -88,11 +89,14 @@ int main(int argc, char* argv[]) {
                 n_elements_recieved = 0;
             }
         }
-        free(temp);
         MPI_Send(&dummy, 1, MPI_INT, 0, 123, MPI_COMM_WORLD);
+        free(temp);
     }
     if (dummy != -1)
         printf("Elemento %d achado na posição %d da lista \n", buscado, dummy);
+    time2 = MPI_Wtime();
+    delta_time = time2 - time1;
+    printf("Variação de tempo %f.\n", delta_time);
     MPI_Finalize();
     free(array);
 }

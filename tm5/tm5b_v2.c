@@ -10,7 +10,7 @@ Demais linhas (quantidade deve ser no mínimo o valor informado na segunda linha
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-`
+
 int main(int argc, char* argv[]) {
     int rank,size, n_elements_recieved;
     MPI_Status status;
@@ -30,8 +30,6 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     MPI_Comm_size(MPI_COMM_WORLD,&size);
-        // MPI_Barrier(MPI_COMM_WORLD);
-    
 
     // Gera os dados
     if (rank == 0) {    // MASTER
@@ -52,8 +50,6 @@ int main(int argc, char* argv[]) {
         fflush(stdout);
     }
         time1 = MPI_Wtime();
-        // temp1 = realloc(temp, nvalues * sizeof(int));
-                // MPI_Barrier(MPI_COMM_WORLD);
         MPI_Bcast(&buscado, 1, MPI_INT, 0, MPI_COMM_WORLD);
         MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
         nvalues = (int) size_array / size ;   // elementos por processo
