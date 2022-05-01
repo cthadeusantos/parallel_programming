@@ -1,11 +1,9 @@
-/* tm5a_v2.c
-Busca por um valor em um array utilizando MPI_BCAST e MPI_SCATTER
+/* tm5a_v1.c
+Busca por um valor em um array utilizando MPI_SEND e MPI_RECV
 
-Entrada de dados feita através de um arquivo
-Primeira linha , valor a ser pesquisado
-Segunda linha, Tamanho do array
-Demais linhas (quantidade deve ser no mínimo o valor informado na segunda linha) valores do vetor
-
+Através do terminal, deve ser fornecido o valor a ser
+pesquisado e o número de elementos a ser criado em um array
+aleatório
 */
 #include <mpi.h>
 #include <stdio.h>
@@ -31,21 +29,22 @@ int main(int argc, char* argv[]) {
 
 
     if (rank == 0) {    // MASTER
+        // Solicita numero a ser buscado
+        printf("Qual o valor que você está buscando? ");
+        fflush(stdout); // MPI: Força a execução da declaração printf
+        scanf("%d", &buscado);
 
-        // Lê arquivo
-        infile=fopen("data.txt","rt");
+        printf("Quantidade de elementos no array: ");
+        fflush(stdout); // MPI: Força a execução da declaração printf
+        scanf("%d", &size_array);
         
-        fscanf(infile,"%d",&buscado);       // Número procurado
-        fscanf(infile,"%d",&size_array);    // Máximo de elementos do array
+        // Cria o array de forma aleatoria
         array = realloc(array, size_array * sizeof(int));
-
-        // Constroi array
-        for(i = 0; i < size_array; ++i) {
-            fscanf(infile,"%d",&array[i]);
+        for (i = 0; i < size_array; i++){
+            array[i] = rand() % size_array;
         }
 
         nvalues = size_array / size ;   // elementos por processo 
-        // i = rank * nvalues;
         int index;
         
         // Verifica se mais de um processo está rodando
@@ -88,7 +87,6 @@ int main(int argc, char* argv[]) {
                 dummy = i + rank * n_elements_recieved;
                 n_elements_recieved = 0;
             }
-            // printf("master %d counter %d process: values are %d\n", rank, counter++, temp[i]);
         }
         free(temp);
         MPI_Send(&dummy, 1, MPI_INT, 0, 123, MPI_COMM_WORLD);
