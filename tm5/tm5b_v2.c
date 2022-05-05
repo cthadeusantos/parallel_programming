@@ -40,21 +40,26 @@ int main(int argc, char* argv[]) {
         fscanf(infile,"%d",&buscado);       // Número procurado
         fscanf(infile,"%d",&size_array);    // Máximo de elementos do array
         array = realloc(array, (int)((size_array) * sizeof(int)));
-        printf("Lendo!\n");
         fflush(stdout);
         // Constroi array
         for(i = 0; i < size_array; ++i) {
             fscanf(infile,"%d",&array[i]);
         }
-        printf("leitura finalizada %d\n", size);
         fflush(stdout);
     }
-        time1 = MPI_Wtime();
-        MPI_Bcast(&buscado, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        if (rank == 0)
+            time1 = MPI_Wtime(); // Inicializa a contagem
+
+        MPI_Bcast(&buscado, 1, MPI_INT, 0, MPI_COMM_WORLD); // Informa o valor procurado
+        MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);  // Informa o tamanho do array
+        
         nvalues = (int) size_array / size ;   // elementos por processo
+        
         MPI_Bcast(&nvalues, 1, MPI_INT, 0, MPI_COMM_WORLD);
         temp = realloc(temp, nvalues * sizeof(int));
+        
         MPI_Scatter(array, nvalues, MPI_INT, temp, nvalues, MPI_INT, 0, MPI_COMM_WORLD);
         for (i = 0; i < nvalues; i++){
             if (temp[i] == buscado){
@@ -62,10 +67,13 @@ int main(int argc, char* argv[]) {
                 nvalues = 0;
             }
         }
-        time2 = MPI_Wtime();
-        delta_time = time2 - time1;
-        printf("Variação de tempo %f.\n", delta_time);
 
+        MPI_Barrier(MPI_COMM_WORLD);
+        if (rank ==0){
+            time2 = MPI_Wtime();
+            delta_time = time2 - time1;
+            printf("Variação de tempo %f\n", delta_time);
+        }
     
         free(array);
         free(temp);

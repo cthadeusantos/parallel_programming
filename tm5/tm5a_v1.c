@@ -4,6 +4,15 @@ Busca por um valor em um array utilizando MPI_SEND e MPI_RECV
 Através do terminal, deve ser fornecido o valor a ser
 pesquisado e o número de elementos a ser criado em um array
 aleatório
+
+INSTRUCAO PARA OSX
+Para evitar a msg:
+A system call failed during shared memory initialization that should
+not have.  It is likely that your MPI job will now either abort or
+experience performance degradation.
+
+digite export TMPDIR=/tmp no seu terminal
+
 */
 #include <mpi.h>
 #include <stdio.h>
@@ -22,6 +31,8 @@ int main(int argc, char* argv[]) {
 
     int i,j,dummy, buscado, size_array;
     FILE *infile;
+
+    system("clear");
 
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -42,9 +53,10 @@ int main(int argc, char* argv[]) {
         for (i = 0; i < size_array; i++){
             array[i] = rand() % size_array;
         }
+        time1 = MPI_Wtime();
     }
 
-    time1 = MPI_Wtime();
+    
     if (rank == 0) {    // MASTER
         nvalues = size_array / size ;   // elementos por processo 
         int index;
@@ -57,7 +69,7 @@ int main(int argc, char* argv[]) {
                 MPI_Send(&array[index], nvalues, MPI_INT, i, 123, MPI_COMM_WORLD);
             }
             
-            printf("INDICE %d \n", i);
+            // printf("INDICE %d \n", i);
             // Adiciona elementos ao ultimo processo
             index = i * nvalues;
             int elements_left = size_array - index;
@@ -90,13 +102,18 @@ int main(int argc, char* argv[]) {
             }
         }
         MPI_Send(&dummy, 1, MPI_INT, 0, 123, MPI_COMM_WORLD);
-        free(temp);
     }
     if (dummy != -1)
         printf("Elemento %d achado na posição %d da lista \n", buscado, dummy);
-    time2 = MPI_Wtime();
-    delta_time = time2 - time1;
-    printf("Variação de tempo %f.\n", delta_time);
-    MPI_Finalize();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0) {
+        time2 = MPI_Wtime();
+        delta_time = time2 - time1;
+        printf("Variação de tempo %f.\n", delta_time);
+    }
+    free(temp);
     free(array);
+    MPI_Finalize();
+
 }

@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
         for(i = 0; i < size_array; ++i) {
             fscanf(infile,"%d",&array[i]);
         }
+        time1 = MPI_Wtime();    // Inicializa a contagem
     }
-
-    time1 = MPI_Wtime();
+  
     if (rank == 0) {    // MASTER
 
         nvalues = size_array / size ;   // elementos por processo 
@@ -92,15 +92,21 @@ int main(int argc, char* argv[]) {
             }
         }
         MPI_Send(&dummy, 1, MPI_INT, 0, 123, MPI_COMM_WORLD);
-        free(temp);
+
     }
 
     if (dummy != -1)
         printf("Elemento %d achado na posição %d da lista \n", buscado, dummy);
-    time2 = MPI_Wtime();
-    printf("%f %f\n", time1, time2);
-    delta_time = time2 - time1;
-    printf("Variação de tempo %f.\n", delta_time);
-    MPI_Finalize();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (rank == 0){
+        time2 = MPI_Wtime();
+        delta_time = time2 - time1;
+        printf("Variação de tempo %f\n", delta_time);
+    }
+
+    free(temp);
     free(array);
+    MPI_Finalize();
+
 }
