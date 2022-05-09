@@ -10,6 +10,7 @@ Demais linhas (quantidade deve ser no mínimo o valor informado na segunda linha
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 int main(int argc, char* argv[]) {
     int rank,size, n_elements_recieved;
@@ -55,18 +56,29 @@ int main(int argc, char* argv[]) {
         MPI_Bcast(&buscado, 1, MPI_INT, 0, MPI_COMM_WORLD); // Informa o valor procurado
         MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);  // Informa o tamanho do array
         
-        nvalues = (int) size_array / size ;   // elementos por processo
+        nvalues = ceil((int) size_array / size) ;   // elementos por processo
         
         MPI_Bcast(&nvalues, 1, MPI_INT, 0, MPI_COMM_WORLD);
         temp = realloc(temp, nvalues * sizeof(int));
         
         MPI_Scatter(array, nvalues, MPI_INT, temp, nvalues, MPI_INT, 0, MPI_COMM_WORLD);
-        for (i = 0; i < nvalues; i++){
-            if (temp[i] == buscado){
-                printf("Valor encontrado %d no rank %d\n", temp[i], rank);
-                nvalues = 0;
+        if (rank <= size - 1 ) {
+            for (i = 0; i < nvalues; i++){
+                if (temp[i] == buscado){
+                    printf("Valor encontrado %d no rank %d\n", temp[i], rank);
+                    nvalues = 0;
+                }
+            }
+        } else {
+            int limit = size_array - nvalues * (size - 1);
+            for (i = 0; i < limit; i++){
+                if (temp[i] == buscado){
+                    printf("Valor encontrado %d no rank %d\n", temp[i], rank);
+                    limit = 0;
+                }
             }
         }
+
 
         MPI_Barrier(MPI_COMM_WORLD);
         if (rank ==0){

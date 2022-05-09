@@ -69,10 +69,20 @@ int main(int argc, char* argv[]) {
         MPI_Scatter(array, nvalues, MPI_INT, temp, nvalues, MPI_INT, 0, MPI_COMM_WORLD);
         
         MPI_Barrier(MPI_COMM_WORLD);
-        for (i = 0; i < nvalues; i++){
-            if (temp[i] == buscado){
-                printf("Valor encontrado %d no rank %d\n", temp[i], rank);
-                nvalues = 0;
+        if (rank <= size - 1 ) {
+            for (i = 0; i < nvalues; i++){
+                if (temp[i] == buscado){
+                    printf("Valor encontrado %d no rank %d\n", temp[i], rank);
+                    nvalues = 0;
+                }
+            }
+        } else {
+            int limit = size_array - nvalues * (size - 1);
+            for (i = 0; i < limit; i++){
+                if (temp[i] == buscado){
+                    printf("Valor encontrado %d no rank %d\n", temp[i], rank);
+                    limit = 0;
+                }
             }
         }
     
