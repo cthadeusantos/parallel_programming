@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "mpi.h"
 
-#define buffer_count 100
+#define buffer_count 10000
 
 int main( argc, argv )
 int argc;

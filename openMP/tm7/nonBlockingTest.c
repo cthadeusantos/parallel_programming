@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include "mpi.h"
 
-#define buffer_count 100
+#define buffer_count 10000
 
 int main( argc, argv )
 int argc;
@@ -100,10 +100,10 @@ char **argv;
       MPI_Wait(&request, MPI_STATUS_IGNORE);
 
       // print_buffer(recv_buffer);
-      printf("\n");
-      for (int i=0; i <buffer_count; i++){
-        printf("%d ", recv_buffer[i]);
-      }
+//      printf("\n");
+  //    for (int i=0; i <buffer_count; i++){
+    //    printf("%d ", recv_buffer[i]);
+      //}
       
       // Work for 3 seconds
       sleep(3);
@@ -117,10 +117,10 @@ char **argv;
       MPI_Wait(&request, MPI_STATUS_IGNORE);
 
       // print_buffer(buffer);
-      printf("\n");
-      for (int i=0; i <buffer_count; i++){
-        printf("%d ", recv_buffer[i]);
-      }
+      //printf("\n");
+      //for (int i=0; i <buffer_count; i++){
+       // printf("%d ", recv_buffer[i]);
+     // }
     }
     
 
