@@ -13,7 +13,7 @@ int main ()
      omp_set_num_threads(NUM_THREADS);
      float tik = clock();
      float tok;
-     #pragma omp parallel 
+     #pragma omp parallel shared (pi)
         {
             int i, id, nthrds; 
             double x, sum;
@@ -28,7 +28,7 @@ int main ()
           tok = clock();
           pi += sum * step;
         }
-          printf("PI calculado é igual a %f step %f\n", tok - tik, pi);
+          printf("PI calculado é igual a %f tempo de calculo %f\n", pi, (tok - tik)/CLOCKS_PER_SEC);
 
 
 }
