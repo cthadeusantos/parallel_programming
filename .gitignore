@@ -1,5 +1,6 @@
-a.out
 output
+*.out
 data.txt
 *.dat
-parallel_programming/
+.vscode/
+notas.txt
